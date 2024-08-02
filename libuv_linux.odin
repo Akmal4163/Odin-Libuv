@@ -1,4 +1,4 @@
-package libuv
+package libuv_linux
 
 import "core:c"
 import "core:os"
