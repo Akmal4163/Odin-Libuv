@@ -49,6 +49,7 @@ uv_cond_t :: distinct sync.Cond
 // see: https://github.com/libuv/libuv/blob/5d1ccc12c48099d720bb39f7430c480a52953039/include/uv/win.h#L284
 uv_barrier_t :: distinct sync.Barrier
 
+//addrinfo        :: distinct linux.addrin
 
 uv_file         :: distinct c.int
 uv_os_sock_t    :: distinct c.int
