@@ -20,13 +20,13 @@ uv_lib_t :: struct {
 uv_key_t :: distinct linux.Key
 when ODIN_ARCH == .amd64 {
     uv_rwlock_t :: struct {
-        read_write_lock_: windows.SRWLOCK,
+        //read_write_lock_: windows.SRWLOCK,
         /* TODO: retained for ABI compatibility; remove me in v2.x */
         padding_: [72]cstring,
     }
 } else {
     uv_rwlock_t :: struct {
-        read_write_lock_: windows.SRWLOCK,
+        //read_write_lock_: windows.SRWLOCK,
         /* TODO: retained for ABI compatibility; remove me in v2.x */
         padding_: [44]cstring,
     }
@@ -36,7 +36,7 @@ uv_cond_t :: distinct sync.Cond
 // see: https://github.com/libuv/libuv/blob/5d1ccc12c48099d720bb39f7430c480a52953039/include/uv/win.h#L284
 uv_barrier_t :: distinct sync.Barrier
 
-addrinfo        :: distinct linux.addrin
+//addrinfo        :: distinct linux.addrin
 uv_file         :: distinct c.int
 uv_os_sock_t    :: distinct c.int
 uv_os_fd_t      :: distinct c.int
