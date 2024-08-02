@@ -403,6 +403,7 @@ uv_statfs_t            :: distinct uv_statfs_s
 uv_process_options_t   :: distinct uv_process_options_s
 uv_thread_options_t    :: distinct uv_thread_options_s
 uv_stdio_container_t   :: distinct uv_stdio_container_s
+uv_once_t              :: distinct uv_once_s
 
 uv_any_handle :: union {
     uv_async_t,
@@ -448,37 +449,38 @@ uv_dirent_type_t :: enum c.int {
 }
 
 //function pointers
-uv_alloc_cb         :: distinct proc "c" (handle: ^uv_handle_t, suggested_size: c.size_t, buf: ^uv_buf_t)
-uv_close_cb         :: distinct proc "c" (handle: ^uv_handle_t)
-uv_walk_cb          :: distinct proc "c" (handle: ^uv_handle_t, arg: rawptr)
-uv_timer_cb         :: distinct proc "c" (handle: ^uv_timer_t)
-uv_prepare_cb       :: distinct proc "c" (handle: ^uv_prepare_t)
-uv_check_cb         :: distinct proc "c" (handle: ^uv_check_t)
-uv_idle_cb          :: distinct proc "c" (handle: ^uv_idle_t)
-uv_async_cb         :: distinct proc "c" (handle: ^uv_async_t)
-uv_poll_cb          :: distinct proc "c" (handle: ^uv_poll_t, status, events: c.int)
-uv_signal_cb        :: distinct proc "c" (handle: ^uv_signal_t, signum: c.int)
-uv_read_cb          :: distinct proc "c" (stream: ^uv_stream_t, nread: c.ssize_t, buf: ^uv_buf_t)
-uv_exit_cb          :: distinct proc "c" (process: ^uv_process_t, exit_status: c.int64_t, term_signal: c.int)
-uv_write_cb         :: distinct proc "c" (req: ^uv_write_t, status: c.int)
-uv_connect_cb       :: distinct proc "c" (req: ^uv_connect_t, status: c.int)
-uv_shutdown_cb      :: distinct proc "c" (req: ^uv_shutdown_t, status: c.int)
-uv_connection_cb    :: distinct proc "c" (server: ^uv_stream_t, status: c.int)
-uv_udp_send_cb      :: distinct proc "c" (req: ^uv_udp_send_t, status: c.int)
-uv_udp_recv_cb      :: distinct proc "c" (handle: ^uv_udp_t, nread: c.ssize_t, buf: ^uv_buf_t, addr: ^linux.Sock_Addr_Any, flags: c.uint)
-uv_fs_event_cb      :: distinct proc "c" (handle: ^uv_fs_event_t, filename: cstring, events, status: c.int)
-uv_fs_poll_cb       :: distinct proc "c" (handle: ^uv_fs_poll_t, status: c.int, prev: ^uv_stat_t, curr: ^uv_stat_t)
-uv_fs_cb            :: distinct proc "c" (req: ^uv_fs_t)
-uv_work_cb          :: distinct proc "c" (req: ^uv_work_t)
-uv_after_work_cb    :: distinct proc "c" (req: ^uv_work_t, status: c.int)
-uv_getaddrinfo_cb   :: distinct proc "c" (req: ^uv_getaddrinfo_t, status: c.int, res: ^addrinfo)
-uv_getnameinfo_cb   :: distinct proc "c" (req: ^uv_getaddrinfo_t status: c.int, hostname, service: cstring)
-uv_thread_cb        :: distinct proc "c" (arg: rawptr)
-uv_malloc_func      :: distinct proc "c" (size: c.size_t) -> rawptr 
-uv_realloc_func     :: distinct proc "c" (ptr: rawptr, size: c.size_t) -> rawptr
-uv_calloc_func      :: distinct proc "c" (count, size: c.size_t) -> rawptr
-uv_free_func        :: distinct proc "c" (ptr: rawptr)
-uv_random_cb        :: distinct proc "c" (req: ^uv_random_t, status: c.int, buf: rawptr, buflen: c.size_t)
+uv_alloc_cb         :: distinct proc "cdecl" (handle: ^uv_handle_t, suggested_size: c.size_t, buf: ^uv_buf_t)
+uv_close_cb         :: distinct proc "cdecl" (handle: ^uv_handle_t)
+uv_walk_cb          :: distinct proc "cdecl" (handle: ^uv_handle_t, arg: rawptr)
+uv_timer_cb         :: distinct proc "cdecl" (handle: ^uv_timer_t)
+uv_prepare_cb       :: distinct proc "cdecl" (handle: ^uv_prepare_t)
+uv_check_cb         :: distinct proc "cdecl" (handle: ^uv_check_t)
+uv_idle_cb          :: distinct proc "cdecl" (handle: ^uv_idle_t)
+uv_async_cb         :: distinct proc "cdecl" (handle: ^uv_async_t)
+uv_poll_cb          :: distinct proc "cdecl" (handle: ^uv_poll_t, status, events: c.int)
+uv_signal_cb        :: distinct proc "cdecl" (handle: ^uv_signal_t, signum: c.int)
+uv_read_cb          :: distinct proc "cdecl" (stream: ^uv_stream_t, nread: c.ssize_t, buf: ^uv_buf_t)
+uv_exit_cb          :: distinct proc "cdecl" (process: ^uv_process_t, exit_status: c.int64_t, term_signal: c.int)
+uv_write_cb         :: distinct proc "cdecl" (req: ^uv_write_t, status: c.int)
+uv_connect_cb       :: distinct proc "cdecl" (req: ^uv_connect_t, status: c.int)
+uv_shutdown_cb      :: distinct proc "cdecl" (req: ^uv_shutdown_t, status: c.int)
+uv_connection_cb    :: distinct proc "cdecl" (server: ^uv_stream_t, status: c.int)
+uv_udp_send_cb      :: distinct proc "cdecl" (req: ^uv_udp_send_t, status: c.int)
+uv_udp_recv_cb      :: distinct proc "cdecl" (handle: ^uv_udp_t, nread: c.ssize_t, buf: ^uv_buf_t, addr: ^linux.Sock_Addr_Any, flags: c.uint)
+uv_fs_event_cb      :: distinct proc "cdecl" (handle: ^uv_fs_event_t, filename: cstring, events, status: c.int)
+uv_fs_poll_cb       :: distinct proc "cdecl" (handle: ^uv_fs_poll_t, status: c.int, prev: ^uv_stat_t, curr: ^uv_stat_t)
+uv_fs_cb            :: distinct proc "cdecl" (req: ^uv_fs_t)
+uv_work_cb          :: distinct proc "cdecl" (req: ^uv_work_t)
+uv_after_work_cb    :: distinct proc "cdecl" (req: ^uv_work_t, status: c.int)
+uv_getaddrinfo_cb   :: distinct proc "cdecl" (req: ^uv_getaddrinfo_t, status: c.int, res: ^addrinfo)
+uv_getnameinfo_cb   :: distinct proc "cdecl" (req: ^uv_getaddrinfo_t status: c.int, hostname, service: cstring)
+uv_thread_cb        :: distinct proc "cdecl" (arg: rawptr)
+uv_malloc_func      :: distinct proc "cdecl" (size: c.size_t) -> rawptr 
+uv_realloc_func     :: distinct proc "cdecl" (ptr: rawptr, size: c.size_t) -> rawptr
+uv_calloc_func      :: distinct proc "cdecl" (count, size: c.size_t) -> rawptr
+uv_free_func        :: distinct proc "cdecl" (ptr: rawptr)
+uv_random_cb        :: distinct proc "cdecl" (req: ^uv_random_t, status: c.int, buf: rawptr, buflen: c.size_t)
+callback            :: distinct proc "cdecl" ()
 
 
 uv_random_s :: struct {
@@ -501,6 +503,11 @@ uv_stdio_container_s :: struct {
         stream: ^uv_stream_t,
         fd: c.int,
     }
+}
+
+uv_once_s :: struct {
+    unused: c.uchar,
+    init_once: libc.once_flag,
 }
 
 uv_process_options_s :: struct {
@@ -977,7 +984,7 @@ foreign uv {
 
     // i don't know how to convert this to odin
     /* void uv_once(uv_once_t *guard, void (*callback)(void)) */
-
+    once                :: proc(guard: ^uv_once_t, cb: callback) ---
     mutex_init          :: proc (handle: ^uv_mutex_t) -> c.int ---
     mutex_init_recursive :: proc (handle: ^uv_mutex_t) -> c.int ---
     mutex_destroy       :: proc (handle: ^uv_mutex_t) ---

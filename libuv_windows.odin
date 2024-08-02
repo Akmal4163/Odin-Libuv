@@ -3,6 +3,7 @@ package libuv_windows
 import "core:c"
 import "core:os"
 import "core:sys/windows"
+import "core:c/libc"
 
 foreign import libuv "libuv.lib"
 foreign import uv "uv.lib"
@@ -405,6 +406,7 @@ uv_statfs_t            :: distinct uv_statfs_s
 uv_process_options_t   :: distinct uv_process_options_s
 uv_thread_options_t    :: distinct uv_thread_options_s
 uv_stdio_container_t   :: distinct uv_stdio_container_s
+uv_once_t              :: distinct uv_once_s
 
 uv_any_handle :: union {
     uv_async_t,
@@ -481,6 +483,7 @@ uv_realloc_func     :: distinct proc "cdecl" (ptr: rawptr, size: c.size_t) -> ra
 uv_calloc_func      :: distinct proc "cdecl" (count, size: c.size_t) -> rawptr
 uv_free_func        :: distinct proc "cdecl" (ptr: rawptr)
 uv_random_cb        :: distinct proc "cdecl" (req: ^uv_random_t, status: c.int, buf: rawptr, buflen: c.size_t)
+callback            :: distinct proc "cdecl" ()
 
 
 uv_random_s :: struct {
@@ -503,6 +506,11 @@ uv_stdio_container_s :: struct {
         stream: ^uv_stream_t,
         fd: c.int,
     }
+}
+
+uv_once_s :: struct {
+    unused: c.uchar,
+    init_once: libc.once_flag,
 }
 
 uv_process_options_s :: struct {
@@ -979,7 +987,7 @@ foreign uv {
 
     // i don't know how to convert this to odin
     /* void uv_once(uv_once_t *guard, void (*callback)(void)) */
-
+    once                :: proc(guard: ^uv_once_t, cb: callback) ---
     mutex_init          :: proc (handle: ^uv_mutex_t) -> c.int ---
     mutex_init_recursive :: proc (handle: ^uv_mutex_t) -> c.int ---
     mutex_destroy       :: proc (handle: ^uv_mutex_t) ---
