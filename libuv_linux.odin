@@ -1,4 +1,4 @@
-package libuv
+package libuv_linux
 
 import "core:c"
 import "core:os"
@@ -18,25 +18,38 @@ uv_lib_t :: struct {
     errmsg: cstring,
 }
 uv_key_t :: distinct linux.Key
-when ODIN_ARCH == .amd64 {
-    uv_rwlock_t :: struct {
-        read_write_lock_: windows.SRWLOCK,
-        /* TODO: retained for ABI compatibility; remove me in v2.x */
-        padding_: [72]cstring,
-    }
-} else {
-    uv_rwlock_t :: struct {
-        read_write_lock_: windows.SRWLOCK,
-        /* TODO: retained for ABI compatibility; remove me in v2.x */
-        padding_: [44]cstring,
-    }
+
+uv_rwlock_t :: struct {
+    __readers: c.uint32_t,
+    __writers: c.uint32_t,
+    __wrphase_futex: c.uint32_t,
+    __writers_futex: c.uint32_t,
+    __pad3: c.uint32_t,
+    __pad4: c.uint32_t,
+    __cur_writer: c.int,
+    __shared: c.int,
+    __rwelision: c.schar,
+    __pad1: [7]c.uchar,
+    __pad2: c.ulonglong,
+    __flags: c.uint,
+}
+
+addrinfo :: struct {
+    ai_flags: c.int,            // AI_PASSIVE, AI_CANONNAME, etc.
+    ai_family: c.int,           // AF_INET, AF_INET6, AF_UNSPEC, etc.
+    ai_socktype: c.int,         // SOCK_STREAM, SOCK_DGRAM, etc.
+    ai_protocol: c.int,         // IPPROTO_TCP, IPPROTO_UDP, etc.
+    ai_addrlen: c.size_t,       // length of ai_addr
+    ai_addr: ^linux.Sock_Addr_Any, // binary address
+    ai_canonname: cstring,      // canonical name for nodename
+    ai_next: ^addrinfo,
 }
 
 uv_cond_t :: distinct sync.Cond
 // see: https://github.com/libuv/libuv/blob/5d1ccc12c48099d720bb39f7430c480a52953039/include/uv/win.h#L284
 uv_barrier_t :: distinct sync.Barrier
 
-addrinfo        :: distinct linux.addrin
+
 uv_file         :: distinct c.int
 uv_os_sock_t    :: distinct c.int
 uv_os_fd_t      :: distinct c.int
@@ -105,12 +118,12 @@ uv_interface_address_s :: struct  {
     phys_addr: [6]c.char,
     is_internal: c.int,
     address: struct #raw_union {
-        address4: windows.sockaddr_in,
-        address6: windows.sockaddr_in6,
+        address4: linux.Sock_Addr_In,
+        address6: linux.Sock_Addr_In6,
     },
     netmask: struct #raw_union {
-        netmask4: windows.sockaddr_in,
-        netmask6: windows.sockaddr_in6,
+        netmask4: linux.Sock_Addr_In,
+        netmask6: linux.Sock_Addr_In6,
     },
 }
 
@@ -451,7 +464,7 @@ uv_connect_cb       :: distinct proc "c" (req: ^uv_connect_t, status: c.int)
 uv_shutdown_cb      :: distinct proc "c" (req: ^uv_shutdown_t, status: c.int)
 uv_connection_cb    :: distinct proc "c" (server: ^uv_stream_t, status: c.int)
 uv_udp_send_cb      :: distinct proc "c" (req: ^uv_udp_send_t, status: c.int)
-uv_udp_recv_cb      :: distinct proc "c" (handle: ^uv_udp_t, nread: c.ssize_t, buf: ^uv_buf_t, addr: ^windows.sockaddr, flags: c.uint)
+uv_udp_recv_cb      :: distinct proc "c" (handle: ^uv_udp_t, nread: c.ssize_t, buf: ^uv_buf_t, addr: ^linux.Sock_Addr_Any, flags: c.uint)
 uv_fs_event_cb      :: distinct proc "c" (handle: ^uv_fs_event_t, filename: cstring, events, status: c.int)
 uv_fs_poll_cb       :: distinct proc "c" (handle: ^uv_fs_poll_t, status: c.int, prev: ^uv_stat_t, curr: ^uv_stat_t)
 uv_fs_cb            :: distinct proc "c" (req: ^uv_fs_t)
@@ -818,10 +831,10 @@ foreign uv {
     tcp_nodelay         :: proc (handle: ^uv_tcp_t, enable: c.int) -> c.int ---
     tcp_keepalive       :: proc (handle: ^uv_tcp_t, enable: c.int, delay: c.uint) -> c.int ---
     tcp_simultaneous_accepts :: proc (handle: ^uv_tcp_t, enable: c.int) -> c.int ---
-    tcp_bind            :: proc (handle: ^uv_tcp_t, addr: ^windows.sockaddr, flags: c.uint) -> c.int ---
-    tcp_getsockname     :: proc (handle: ^uv_tcp_t, name: ^windows.sockaddr, namelen: ^c.int) -> c.int ---
-    tcp_getpeername     :: proc (handle: ^uv_tcp_t, name: ^windows.sockaddr, namelen: ^c.int) -> c.int ---
-    tcp_connect         :: proc (req: ^uv_connect_t, handle: ^uv_tcp_t, addr: ^windows.sockaddr, cb: uv_connect_cb) -> c.int ---
+    tcp_bind            :: proc (handle: ^uv_tcp_t, addr: ^linux.Sock_Addr_Any, flags: c.uint) -> c.int ---
+    tcp_getsockname     :: proc (handle: ^uv_tcp_t, name: ^linux.Sock_Addr_Any, namelen: ^c.int) -> c.int ---
+    tcp_getpeername     :: proc (handle: ^uv_tcp_t, name: ^linux.Sock_Addr_Any, namelen: ^c.int) -> c.int ---
+    tcp_connect         :: proc (req: ^uv_connect_t, handle: ^uv_tcp_t, addr: ^linux.Sock_Addr_Any, cb: uv_connect_cb) -> c.int ---
     tcp_close_reset     :: proc (handle: ^uv_tcp_t, close_cb: uv_close_cb) -> c.int ---
     socketpair          :: proc (protocol, type: c.int, socket_vector: [2]uv_os_sock_t, flags0, flags1: c.int) -> c.int ---
 
@@ -852,10 +865,10 @@ foreign uv {
     udp_init            :: proc (loop: ^uv_loop_t, handle: ^uv_udp_t) -> c.int ---
     udp_init_ex         :: proc (loop: ^uv_loop_t, handle: ^uv_udp_t, flags: c.uint) -> c.int ---
     udp_open            :: proc (handle: ^uv_udp_t, sock: uv_os_sock_t) -> c.int ---
-    udp_bind            :: proc (handle: ^uv_udp_t, addr: ^windows.sockaddr, flags: c.int) -> c.int ---
-    udp_connect         :: proc (handle: ^uv_udp_t, addr: ^windows.sockaddr) -> c.int ---
-    udp_getpeername     :: proc (handle: ^uv_udp_t, name: ^windows.sockaddr, namelen: ^c.int) -> c.int ---
-    udp_getsockname     :: proc (handle: ^uv_udp_t, name: ^windows.sockaddr, namelen: ^c.int) -> c.int ---
+    udp_bind            :: proc (handle: ^uv_udp_t, addr: ^linux.Sock_Addr_Any, flags: c.int) -> c.int ---
+    udp_connect         :: proc (handle: ^uv_udp_t, addr: ^linux.Sock_Addr_Any) -> c.int ---
+    udp_getpeername     :: proc (handle: ^uv_udp_t, name: ^linux.Sock_Addr_Any, namelen: ^c.int) -> c.int ---
+    udp_getsockname     :: proc (handle: ^uv_udp_t, name: ^linux.Sock_Addr_Any, namelen: ^c.int) -> c.int ---
     udp_set_membership  :: proc (handle: ^uv_udp_t, multicast_addr: cstring, interface_addr: cstring, membership: uv_membership) -> c.int ---
     udp_set_source_membership :: proc (handle: ^uv_udp_t, multicast_addr: cstring, interface_addr: cstring, source_addr: cstring, membership: uv_membership) -> c.int ---
     udp_set_multicast_loop :: proc (handle: ^uv_udp_t, on: c.int) -> c.int ---
@@ -863,8 +876,8 @@ foreign uv {
     udp_set_multicast_interface :: proc (handle: ^uv_udp_t, interface_addr: cstring) -> c.int ---
     udp_set_broadcast   :: proc (handle: ^uv_udp_t, on: c.int) -> c.int ---
     udp_set_ttl         :: proc (handle: ^uv_udp_t, ttl: c.int) -> c.int ---
-    udp_send            :: proc (req: uv_udp_send_t, handle: ^uv_udp_t, bufs: []uv_buf_t , nbufs: c.uint, addr: ^windows.sockaddr, send_cb: uv_udp_send_cb) -> c.int ---
-    udp_try_send        :: proc (handle: ^uv_udp_t, bufs: []uv_buf_t, nbufs: c.uint, addr: ^windows.sockaddr) -> c.int ---
+    udp_send            :: proc (req: uv_udp_send_t, handle: ^uv_udp_t, bufs: []uv_buf_t , nbufs: c.uint, addr: ^linux.Sock_Addr_Any, send_cb: uv_udp_send_cb) -> c.int ---
+    udp_try_send        :: proc (handle: ^uv_udp_t, bufs: []uv_buf_t, nbufs: c.uint, addr: ^linux.Sock_Addr_Any) -> c.int ---
     udp_recv_start      :: proc (handle: ^uv_udp_t, alloc_cb: uv_alloc_cb, recv_cb: uv_udp_recv_cb) -> c.int ---
     udp_using_recvmmsg  :: proc (handle: ^uv_udp_t) -> c.int ---
     udp_recv_stop       :: proc (handle: ^uv_udp_t) -> c.int ---
@@ -937,7 +950,7 @@ foreign uv {
     //DNS utility
     getaddrinfo         :: proc (loop: ^uv_loop_t, req: ^uv_getaddrinfo_t, getaddrinfo_cb: uv_getaddrinfo_cb , node, service: cstring, hints: ^addrinfo) -> c.int ---
     freeaddrinfo        :: proc (ai: ^addrinfo) ---
-    getnameinfo         :: proc (loop: ^uv_loop_t, req: ^uv_getaddrinfo_t, getnameinfo_cb: uv_getnameinfo_cb , addr: ^windows.sockaddr, flags: c.int) -> c.int ---
+    getnameinfo         :: proc (loop: ^uv_loop_t, req: ^uv_getaddrinfo_t, getnameinfo_cb: uv_getnameinfo_cb , addr: ^linux.Sock_Addr_Any, flags: c.int) -> c.int ---
 
     //shared library handling
     dlopen              :: proc (filename: cstring, lib: ^uv_lib_t) -> c.int ---
@@ -1013,11 +1026,11 @@ foreign uv {
     interface_addresses :: proc (addresses: [^]uv_interface_address_t, count: ^c.int) -> c.int ---
     free_interface_addresses :: proc (addresses: ^uv_interface_address_t, count: c.int) ---
     loadavg             :: proc (avg: [3]c.double) ---
-    ip4_addr            :: proc (ip: cstring, port: c.int, addr: ^windows.sockaddr_in) -> c.int ---
-    ip6_addr            :: proc (ip: cstring, port: c.int, addr: ^windows.sockaddr_in6) -> c.int ---
-    ip4_name            :: proc (src: ^windows.sockaddr_in, dst: cstring, size: c.size_t) -> c.int ---
-    ip6_name            :: proc (src: ^windows.sockaddr_in6, dst: cstring, size: c.size_t) -> c.int ---
-    ip_name             :: proc (src: ^windows.sockaddr, dst: cstring, size: c.size_t) -> c.int ---
+    ip4_addr            :: proc (ip: cstring, port: c.int, addr: ^linux.Sock_Addr_In) -> c.int ---
+    ip6_addr            :: proc (ip: cstring, port: c.int, addr: ^linux.Sock_Addr_In6) -> c.int ---
+    ip4_name            :: proc (src: ^linux.Sock_Addr_In, dst: cstring, size: c.size_t) -> c.int ---
+    ip6_name            :: proc (src: ^linux.Sock_Addr_In6, dst: cstring, size: c.size_t) -> c.int ---
+    ip_name             :: proc (src: ^linux.Sock_Addr_Any, dst: cstring, size: c.size_t) -> c.int ---
     inet_ntop           :: proc (af: c.int src: rawptr, dst: cstring, size: c.size_t) -> c.int ---
     inet_pton           :: proc (af: c.int, src: cstring, dst: rawptr) -> c.int ---
     if_indextoname      :: proc (ifindex: c.uint, buffer: cstring, size: c.size_t) -> c.int ---

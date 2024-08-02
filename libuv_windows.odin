@@ -1,4 +1,4 @@
-package main
+package libuv_windows
 
 import "core:c"
 import "core:os"
