@@ -1,7 +1,9 @@
 # Odin-Libuv
 
 This is handwritten Libuv bindings for Odin Programming Language.
-WARNING !!! This library is only tested on Windows, not tested on linux.
+WARNING !!! This library is only tested on Windows, not tested on Linux.
+
+MacOS support is planned in the future, but at this time, this library is only compatible with Windows and Linux.
 
 This binding is compatible with libuv Version 1.48.0 (Stable).
 
