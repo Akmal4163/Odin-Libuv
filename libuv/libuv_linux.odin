@@ -18,18 +18,10 @@ lib_t :: struct {
     errmsg: cstring,
 }
 key_t :: distinct linux.Key
-when ODIN_ARCH == .amd64 {
-    rwlock_t :: struct {
-        read_write_lock_: windows.SRWLOCK,
-        /* TODO: retained for ABI compatibility; remove me in v2.x */
-        padding_: [72]cstring,
-    }
-} else {
-    rwlock_t :: struct {
-        read_write_lock_: windows.SRWLOCK,
-        /* TODO: retained for ABI compatibility; remove me in v2.x */
-        padding_: [44]cstring,
-    }
+rwlock_t :: struct {
+    writelock: sem_t,
+    lock: sem_t,
+    readers: c.int,
 }
 
 cond_t :: distinct sync.Cond
