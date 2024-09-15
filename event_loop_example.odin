@@ -1,4 +1,4 @@
-package odin
+package main
 
 import "core:fmt"
 import uv "libuv"
