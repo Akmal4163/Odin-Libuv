@@ -1,4 +1,4 @@
-package main
+package libuv
 
 import "core:c"
 import "core:os"

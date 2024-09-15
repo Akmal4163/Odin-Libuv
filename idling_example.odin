@@ -22,10 +22,5 @@ main::proc() {
     defer uv.loop_close(uv.default_loop())
 
     fmt.println("Idling...\n")
-<<<<<<< HEAD
     uv.run(uv.default_loop(), uv.run_mode.RUN_DEFAULT)
 }
-=======
-    uv.run(uv.default_loop(), uv.uv_run_mode.UV_RUN_DEFAULT)
-}
->>>>>>> 2fa9f92b4aa0ebb296ab762eabc5b16b8215cb57
