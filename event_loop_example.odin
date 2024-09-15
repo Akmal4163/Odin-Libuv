@@ -9,6 +9,6 @@ main :: proc () {
     defer uv.loop_close(loop)
 
     fmt.println("uv default loop.....")
-    uv.run(loop, uv.uv_run_mode.UV_RUN_DEFAULT)
+    uv.run(loop, uv.run_mode.RUN_DEFAULT)
 }
 
