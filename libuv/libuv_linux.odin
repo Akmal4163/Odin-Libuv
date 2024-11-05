@@ -794,10 +794,10 @@ foreign uv {
     accept              :: proc (server: ^stream_t, client: ^stream_t) -> c.int ---
     read_start          :: proc (stream: ^stream_t, alloc_cb: alloc_cb, read_cb: read_cb) -> c.int ---
     read_stop           :: proc (stream: ^stream_t) -> c.int ---
-    write               :: proc (req: ^write_t, handle: ^stream_t, bufs: []buf_t, nbufs: c.uint, cb: write_cb) -> c.int ---
-    write2              :: proc (req: ^write_t, handle: ^stream_t, bufs: []buf_t, nbufs: c.uint, send_handle: ^stream_t, cb: write_cb) -> c.int ---
-    try_write           :: proc (handle: ^stream_t, bufs: []buf_t, nbufs: c.uint) -> c.int ---
-    try_write2          :: proc (handle: ^stream_t, bufs: []buf_t, nbufs: c.uint, send_handle: ^stream_t) -> c.int ---
+    write               :: proc (req: ^write_t, handle: ^stream_t, bufs: [^]buf_t, nbufs: c.uint, cb: write_cb) -> c.int ---
+    write2              :: proc (req: ^write_t, handle: ^stream_t, bufs: [^]buf_t, nbufs: c.uint, send_handle: ^stream_t, cb: write_cb) -> c.int ---
+    try_write           :: proc (handle: ^stream_t, bufs: [^]buf_t, nbufs: c.uint) -> c.int ---
+    try_write2          :: proc (handle: ^stream_t, bufs: [^]buf_t, nbufs: c.uint, send_handle: ^stream_t) -> c.int ---
     is_readable         :: proc (handle: ^stream_t) -> c.int ---
     is_writable         :: proc (handle: ^stream_t) -> c.int ---
     stream_set_blocking :: proc (handle: ^stream_t, blocking: c.int) -> c.int ---
